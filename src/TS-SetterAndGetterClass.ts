@@ -1,3 +1,5 @@
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable max-classes-per-file */
 /* eslint-disable no-empty */
 /* eslint-disable no-console */
 /* eslint-disable no-inner-declarations */
@@ -70,7 +72,7 @@ console.group('1. Naudojant "getter" ir "setter" NESUTRUMPINTAS funkcijas:');
     constructor(
       name: string,
       surname: string,
-      items: Array<{ title: string, price: number }>,
+      items: Item[],
       age: number,
     ) {
       this.setName(name);
@@ -239,15 +241,15 @@ console.group('1. Naudojant "getter" ir "setter" NESUTRUMPINTAS funkcijas:');
   {
     try {
       const person2 = new Person('Faustas', 'Yesakaits', [{ title: 'asdasd', price: 5 }, { title: 'asdasda', price: 40 }], 26);
-      // console.log(person2.getItems());
+      console.log(person2.getItems());
     } catch (error) { console.log(error); }
     try {
       const person3 = new Person('Romanas', 'Gudatis', [], 52);
-      // console.log(person3.getItems());
+      console.log(person3.getItems());
     } catch (error) { console.log(error); }
     try {
       const RightPerson = new Person('Sanyrual', 'Silevaš', [{ title: 'Glasses', price: 50 }], 32);
-      // console.log(RightPerson.getItems());
+      console.log(RightPerson.getItems());
     } catch (error) { console.log(error); }
   }
   console.groupEnd();
@@ -257,11 +259,101 @@ console.groupEnd();
 // PASIKOPIJUOKITE VISĄ PIRMĄ UŽDUOTĮ IR PAKEISTIKTE KODĄ NAUDOJANT NAUJĄ "get" ir "set" SINTAKSĘ
 // 55min
 console.group('2. Naudojant "get" ir "set" ES6 funkcijas:');
-{
-  // class Person {
-  // }
 
-  // const person = new Person();
+type Item2 = {
+  title: string,
+  price: number,
+};
+
+{
+  class Person2 {
+    private static readonly ONLY_LETTERS = /^[a-zA-ZĄČĘĖĮŠŲŪŽąčęėįšųūž]+$/;
+
+    private _name!: string;
+
+    private _surname!: string;
+
+    private _items!: Item2[];
+
+    private _age!: number;
+
+    constructor(
+      name: string,
+      surname: string,
+      items: Item2[],
+      age: number,
+    ) {
+      this.name = name;
+      this.surname = surname;
+      this.items = items;
+      this.age = age;
+    }
+
+    public set name(val: string) {
+      if (val === '') throw new Error('Cannot be emtpy');
+      if (val.length < 3) throw new Error('Need to be more than 3 letters');
+      if (val.length > 9) throw new Error('Too many letters, slow down there cowboy');
+
+      this._name = val;
+    }
+
+    public get name() {
+      return this._name;
+    }
+
+    public set surname(val: string) {
+      if (val.length < 3) throw new Error('Needs not be more than 2');
+      if (val !== val[0].toUpperCase() + val.slice(1)) throw new Error('Needs to be first letter UpperCase');
+      if (!Person2.ONLY_LETTERS.test(val)) throw new Error('Needs to be only letters');
+
+      this._surname = val;
+    }
+
+    public get surname() {
+      return this._surname;
+    }
+
+    public set items(val: Item2[]) {
+      if (val.length < 1) throw new Error('Need items');
+
+      const isTitleExisting = val.filter((x): boolean => x.title === '');
+
+      if (isTitleExisting.length) throw new Error('No title');
+
+      const isPriceHigh = val.filter((x) => x.price < 15);
+
+      if (isPriceHigh.length) throw new Error('Price is too small');
+      this._items = JSON.parse(JSON.stringify(val));
+    }
+
+    public get items() {
+      return JSON.parse(JSON.stringify(this._items));
+    }
+
+    public set age(val: number) {
+      if (val < 0) throw new Error('Youre Not even alive, how are you even typing this?');
+      if (val > 99) throw new Error('You are either one lucky person, or a cursed one to say the least');
+
+      this._age = val;
+    }
+
+    public get age() {
+      return this._age;
+    }
+
+    public get FullName() {
+      return `${this._name} ${this._surname}`;
+    }
+
+    public get totalItemValue() {
+      return this.items.reduce((
+        current: number,
+        previous: Item2,
+      ) => (current + previous.price), 0);
+    }
+  }
+
+  const personSecond = new Person2('Alius', 'Grigaliūnas', [{ title: 'Photo', price: 5 }, { title: '', price: 20 }], 26);
 
   // 10min
   console.groupCollapsed(`2.1. Sukurkite klasę Person, kuri turėtų privačias savybes:
@@ -272,48 +364,110 @@ console.group('2. Naudojant "get" ir "set" ES6 funkcijas:');
     Aprašykite konstruktorių kuris priimtų šiom savybėms skirtus parametrus ir nustatytų reikšmes naudojant "setter" funkcijas.
   `);
   {
+    console.log(`${personSecond.name} ${personSecond.surname} ${personSecond.age}`);
   }
   console.groupEnd();
 
   // 5min
   console.groupCollapsed('2.2. Aprašykite kiekvienai savybei ES6 "get" funkcijas');
   {
+    console.log(personSecond.items);
   }
   console.groupEnd();
 
   // 5min
   console.groupCollapsed('2.3. Sukurkite papildomą getterį "fullname", kuris grąžintų pilną žmogaus vardą.');
   {
+    console.log(personSecond.FullName);
   }
   console.groupEnd();
 
   // 5min
   console.groupCollapsed('2.4. Sukurkite papildomą getterį "totalItemValue", kuris grąžintų visų asmens daiktų kainų sumą');
   {
+    console.log(personSecond.totalItemValue);
   }
   console.groupEnd();
 
   // 5min
   console.groupCollapsed('2.5. name "setter"yje aprašykite 3 savo sugalvotas validacijas');
   {
+    try {
+      const person1 = new Person2('', '', [], 0);
+      console.log(person1.name);
+    } catch (error) { console.log(error); }
+    try {
+      const person2 = new Person2('la', '', [], 0);
+      console.log(person2.name);
+    } catch (error) { console.log(error); }
+    try {
+      const person3 = new Person2('Neprisikiškiakopusteliaujantysis', '', [], 0);
+      console.log(person3.name);
+    } catch (error) { console.log(error); }
+    try {
+      const RightPerson = new Person2('Sanyrual', 'Silevaš', [], 32);
+      console.log(RightPerson.name);
+    } catch (error) { console.log(error); }
   }
   console.groupEnd();
 
   // 5min
   console.groupCollapsed('2.6. surname "setter"yje aprašykite 3 savo sugalvotas validacijas');
   {
+    try {
+      const person1 = new Person2('romynas', '', [], 0);
+      console.log(person1);
+    } catch (error) { console.log(error); }
+    try {
+      const person2 = new Person2('alius', 'laaaa', [], 0);
+      console.log(person2);
+    } catch (error) { console.log(error); }
+    try {
+      const person3 = new Person2('opelis', '-**-*+5656', [], 0);
+      console.log(person3);
+    } catch (error) { console.log(error); }
+    try {
+      const RightPerson = new Person2('Sadyvmir', 'Saksualdiš', [], 32);
+      console.log(RightPerson.surname);
+    } catch (error) { console.log(error); }
   }
   console.groupEnd();
 
   // 10min
   console.groupCollapsed('2.7. age "setter"yje aprašykite 2 savo sugalvotas validacijas');
   {
+    try {
+      const person2 = new Person2('Faustas', 'Yesakaits', [], -15);
+      console.log(person2.age);
+    } catch (error) { console.log(error); }
+    try {
+      const person3 = new Person2('Romanas', 'Gudatis', [], 120);
+      console.log(person3.age);
+    } catch (error) { console.log(error); }
+    try {
+      const RightPerson = new Person2('Sanyrual', 'Silevaš', [], 32);
+      console.log(RightPerson.age);
+    } catch (error) { console.log(error); }
   }
   console.groupEnd();
 
   // 10min
   console.groupCollapsed('2.8. items "setter"yje aprašykite 3 savo sugalvotas validacijas KIEKVIENO priskiriamo masyvo "daiktams"');
   {
+    {
+      try {
+        const person2 = new Person2('Faustas', 'Yesakaits', [{ title: 'asdasd', price: 5 }, { title: 'asdasda', price: 40 }], 26);
+        console.log(person2.items);
+      } catch (error) { console.log(error); }
+      try {
+        const person3 = new Person2('Romanas', 'Gudatis', [], 52);
+        console.log(person3.items);
+      } catch (error) { console.log(error); }
+      try {
+        const RightPerson = new Person2('Sanyrual', 'Silevaš', [{ title: 'Glasses', price: 50 }], 32);
+        console.log(RightPerson.items);
+      } catch (error) { console.log(error); }
+    }
   }
   console.groupEnd();
 }
